@@ -1,4 +1,4 @@
-package com.ost.Noted;
+package com.ost.noted;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.ost.Noted.R;
+import com.ost.noted.R;
 
 public class FirestoreAdapter extends FirestoreRecyclerAdapter<JournalModel, FirestoreAdapter.JournalViewHolder> {
 

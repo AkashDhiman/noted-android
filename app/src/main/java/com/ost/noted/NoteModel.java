@@ -1,6 +1,4 @@
-package com.ost.Noted;
-
-import java.util.Date;
+package com.ost.noted;
 
 public class NoteModel {
     private String text;

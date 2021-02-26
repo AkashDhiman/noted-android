@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ost.Noted">
+    package="com.ost.noted">
 
     <application
         android:allowBackup="true"
@@ -9,15 +9,15 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.FirebaseApp">
-        <activity android:name="com.ost.Noted.NotesActivity"
-            android:parentActivityName="com.ost.Noted.JournalActivity"
+        <activity android:name="com.ost.noted.NotesActivity"
+            android:parentActivityName="com.ost.noted.JournalActivity"
             >
         </activity>
         <activity
-            android:name="com.ost.Noted.JournalActivity"
+            android:name="com.ost.noted.JournalActivity"
             android:label="@string/title_activity_journal"
             android:theme="@style/Theme.FirebaseApp.NoActionBar" />
-        <activity android:name="com.ost.Noted.SignInActivity">
+        <activity android:name="com.ost.noted.SignInActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

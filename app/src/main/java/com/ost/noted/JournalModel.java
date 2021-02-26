@@ -1,4 +1,4 @@
-package com.ost.Noted;
+package com.ost.noted;
 
 public class JournalModel {
 

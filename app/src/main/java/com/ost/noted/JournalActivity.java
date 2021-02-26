@@ -1,4 +1,4 @@
-package com.ost.Noted;
+package com.ost.noted;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,7 +14,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.ost.Noted.R;
+import com.ost.noted.R;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;

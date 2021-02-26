@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.ost.Noted.JournalActivity"
+    tools:context="com.ost.noted.JournalActivity"
     android:background="#c2f5cc">
 
     <com.google.android.material.appbar.AppBarLayout

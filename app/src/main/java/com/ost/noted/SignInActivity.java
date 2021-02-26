@@ -1,4 +1,4 @@
-package com.ost.Noted;
+package com.ost.noted;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,7 +22,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.ost.Noted.R;
+import com.ost.noted.R;
 
 public class SignInActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "SignInActivity";

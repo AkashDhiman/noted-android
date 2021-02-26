@@ -1,4 +1,4 @@
-package com.ost.Noted;
+package com.ost.noted;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,7 +22,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.ost.Noted.R;
+import com.ost.noted.R;
 
 public class NotesActivity extends AppCompatActivity {
     private FirebaseFirestore db;
