@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -14,15 +15,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.ost.noted.R;
 
 public class NotesActivity extends AppCompatActivity {
     private FirebaseFirestore db;
@@ -34,12 +36,31 @@ public class NotesActivity extends AppCompatActivity {
     private LinearLayoutManager mLinearLayoutManager;
     private EditText mNoteEditText;
     private Button mSendButton;
+    private final int NOTE_TYPE_TEXT = 0;
+    private final int NOTE_TYPE_IMAGE = 1;
 
     public static class NoteViewHolder extends RecyclerView.ViewHolder {
         private TextView noteTextView;
         public NoteViewHolder(View v) {
             super(v);
             noteTextView = itemView.findViewById(R.id.noteTextView);
+        }
+
+        public void bind(NoteModel noteModel) {
+            noteTextView.setText(noteModel.getText());
+        }
+    }
+
+    public static class ImageViewHolder extends RecyclerView.ViewHolder {
+        private ImageView noteImageView;
+        public ImageViewHolder(View v) {
+            super(v);
+            noteImageView = itemView.findViewById(R.id.noteImageView);
+        }
+
+        public void bind(NoteModel noteModel) {
+            Glide.with(itemView.getContext()).load(noteModel.getImage()).into(noteImageView);
+            noteImageView.setClipToOutline(true);
         }
     }
 
@@ -59,18 +80,35 @@ public class NotesActivity extends AppCompatActivity {
                 .build();
 
         NoteList = findViewById(R.id.noteRecyclerView);
-        adapter = new FirestoreRecyclerAdapter<NoteModel, NoteViewHolder>(options) {
-
-            @NonNull
+        adapter = new FirestoreRecyclerAdapter<NoteModel, RecyclerView.ViewHolder>(options) {
             @Override
-            public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.note_item_single, parent, false);
-                return new NoteViewHolder(view);
+            protected void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position, @NonNull NoteModel model) {
+                if (getItemViewType(position) == NOTE_TYPE_TEXT) {
+                    ((NoteViewHolder) holder).bind(getItem(position));
+                } else {
+                    ((ImageViewHolder) holder).bind(getItem(position));
+                }
             }
 
             @Override
-            protected void onBindViewHolder(@NonNull NoteViewHolder holder, int position, @NonNull NoteModel model) {
-                holder.noteTextView.setText(model.getText());
+            public int getItemViewType(int position) {
+                if(getItem(position).getNoteType() == 0L) {
+                    return NOTE_TYPE_TEXT;
+                } else {
+                    return NOTE_TYPE_IMAGE;
+                }
+            }
+
+            @NonNull
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                if (viewType == NOTE_TYPE_TEXT) {
+                    View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.note_item_single, parent, false);
+                    return new NoteViewHolder(view);
+                } else {
+                    View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.image_note_single, parent, false);
+                    return new ImageViewHolder(view);
+                }
             }
         };
 
@@ -120,7 +158,7 @@ public class NotesActivity extends AppCompatActivity {
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NoteModel note = new NoteModel(mNoteEditText.getText().toString());
+                NoteModel note = new NoteModel(mNoteEditText.getText().toString(), 0L);
                 db.collection("journals").document(id).collection("notes").add(note);
                 mNoteEditText.setText("");
             }

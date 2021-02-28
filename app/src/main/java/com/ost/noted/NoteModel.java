@@ -2,15 +2,19 @@ package com.ost.noted;
 
 public class NoteModel {
     private String text;
+    private String image;
+    private long noteType;
     private String ts; // created at timestamp
     public NoteModel() {
 
     }
 
-    public NoteModel(String text) {
+    public NoteModel(String text, long noteType) {
         this.text = text;
         Long ts = System.currentTimeMillis() / 1000;
         this.ts = ts.toString();
+        this.image = "https://picsum.photos/500/300";
+        this.noteType = noteType;
     }
 
     public String getText() {
@@ -27,5 +31,21 @@ public class NoteModel {
 
     public void setTs(String ts) {
         this.ts = ts;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public long getNoteType() {
+        return noteType;
+    }
+
+    public void setNoteType(long noteType) {
+        this.noteType = noteType;
     }
 }

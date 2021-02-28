@@ -18,7 +18,9 @@
             app:cardElevation="1dp"
             android:background="#9eca9d"
             android:layout_margin="6dp"
-            android:orientation="vertical">
+            android:clickable="true"
+            android:orientation="vertical"
+            android:focusable="true">
             <TextView
                 android:id="@+id/noteTextView"
                 android:layout_width="wrap_content"
@@ -26,6 +28,7 @@
                 android:layout_margin="16dp"
                 android:textSize="12dp"
                 android:layout_weight="0"
+                android:text="@string/note_text"
                 android:textAppearance="?android:attr/textAppearanceLarge"/>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
