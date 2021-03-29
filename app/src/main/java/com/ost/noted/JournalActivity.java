@@ -50,7 +50,6 @@ public class JournalActivity extends AppCompatActivity implements FirestoreAdapt
         mFirestoreList = findViewById(R.id.firestore_list);
         db = FirebaseFirestore.getInstance();
         Query query = db.collection("journals").whereEqualTo("uid", currentUser.getUid());
-//        Query query = db.collection("journals");
         FirestoreRecyclerOptions<JournalModel> options = new FirestoreRecyclerOptions.Builder<JournalModel>()
                 .setQuery(query, JournalModel.class)
                 .build();

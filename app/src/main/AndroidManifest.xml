@@ -9,15 +9,17 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.FirebaseApp">
-        <activity android:name="com.ost.noted.NotesActivity"
-            android:parentActivityName="com.ost.noted.JournalActivity"
-            >
-        </activity>
+        <activity android:name=".ImagePreviewActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            />
         <activity
-            android:name="com.ost.noted.JournalActivity"
+            android:name=".NotesActivity"
+            android:parentActivityName=".JournalActivity" />
+        <activity
+            android:name=".JournalActivity"
             android:label="@string/title_activity_journal"
             android:theme="@style/Theme.FirebaseApp.NoActionBar" />
-        <activity android:name="com.ost.noted.SignInActivity">
+        <activity android:name=".SignInActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

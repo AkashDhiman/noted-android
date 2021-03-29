@@ -7,6 +7,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
@@ -35,7 +38,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.Serializable;
 
 public class NotesActivity extends AppCompatActivity {
     private FirebaseFirestore db;
@@ -71,6 +76,20 @@ public class NotesActivity extends AppCompatActivity {
         public ImageViewHolder(View v) {
             super(v);
             noteImageView = itemView.findViewById(R.id.noteImageView);
+            noteImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    BitmapDrawable drawable = (BitmapDrawable) noteImageView.getDrawable();
+                    Bitmap bmp = drawable.getBitmap();
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+
+                    Intent intent = new Intent(v.getContext(), ImagePreviewActivity.class);
+                    intent.putExtra("image", byteArray);
+                    v.getContext().startActivity(intent);
+                }
+            });
         }
 
         public void bind(NoteModel noteModel) {
@@ -83,7 +102,6 @@ public class NotesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notes);
-
         Intent intent = getIntent();
         id = intent.getStringExtra(JournalActivity.ID);
         db = FirebaseFirestore.getInstance();
