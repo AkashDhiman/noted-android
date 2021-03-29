@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:ads="http://schemas.android.com/tools"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:gravity="center_vertical"
+            app:strokeColor="#000"
+            app:cardElevation="2dp"
+            android:background="#9eca9d"
+            android:layout_margin="6dp"
+            android:clickable="true"
+            android:orientation="vertical"
+            app:cardBackgroundColor="@color/colorPrimary"
+            android:focusable="true">
+
+            <TextView
+                android:id="@+id/noteFileView"
+                android:layout_width="wrap_content"
+                android:layout_height="80dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_weight="0"
+                android:gravity="center_vertical"
+                android:text="@string/note_text"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="12dp" />
+
+            <ImageView
+                android:id="@+id/attachment"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_gravity="right|center_vertical"
+                ads:srcCompat="@drawable/ic_attachment" />
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</LinearLayout>

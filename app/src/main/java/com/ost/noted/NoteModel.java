@@ -2,7 +2,7 @@ package com.ost.noted;
 
 public class NoteModel {
     private String text;
-    private String image;
+    private String fileUrl;
     private long noteType;
     private String ts; // created at timestamp
     public NoteModel() {
@@ -13,17 +13,16 @@ public class NoteModel {
         this.text = text;
         Long ts = System.currentTimeMillis() / 1000;
         this.ts = ts.toString();
-        this.image = null;
+        this.fileUrl = null;
         this.noteType = noteType;
     }
 
-    public NoteModel(String text, long noteType, String image) {
+    public NoteModel(String text, long noteType, String fileUrl) {
         this.text = text;
         Long ts = System.currentTimeMillis() / 1000;
         this.ts = ts.toString();
-        this.image = "https://picsum.photos/500/300";
         this.noteType = noteType;
-        this.image = image;
+        this.fileUrl = fileUrl;
     }
 
     public String getText() {
@@ -42,12 +41,12 @@ public class NoteModel {
         this.ts = ts;
     }
 
-    public String getImage() {
-        return image;
+    public String getFileUrl() {
+        return fileUrl;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
     public long getNoteType() {

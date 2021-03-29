@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class JournalActivity extends AppCompatActivity implements FirestoreAdapter.OnListItemClick {
-    public static final String ID = "com.ost.firebaseapp.ID";
+    public static final String ID = "com.ost.noted.ID";
     private FirebaseFirestore db;
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private FirebaseUser currentUser = mAuth.getCurrentUser();

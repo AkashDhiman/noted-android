@@ -8,12 +8,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.Image;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -28,6 +27,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.common.util.IOUtils;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,7 +40,11 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.Serializable;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class NotesActivity extends AppCompatActivity {
     private FirebaseFirestore db;
@@ -52,11 +56,12 @@ public class NotesActivity extends AppCompatActivity {
     private LinearLayoutManager mLinearLayoutManager;
     private EditText mNoteEditText;
     private Button mSendButton;
-    private ImageView mAddNoteImageView;
+    private ImageView uploadFile;
     private static FirebaseStorage storage;
-    private static final int REQUEST_IMAGE = 10;
+    private static final int REQUEST_FILE = 10;
     private static final int NOTE_TYPE_TEXT = 0;
     private static final int NOTE_TYPE_IMAGE = 1;
+    private static final int NOTE_TYPE_FILE = 2;
     private String id;
 
     public static class NoteViewHolder extends RecyclerView.ViewHolder {
@@ -68,6 +73,30 @@ public class NotesActivity extends AppCompatActivity {
 
         public void bind(NoteModel noteModel) {
             noteTextView.setText(noteModel.getText());
+        }
+    }
+
+    public static class FileViewHolder extends RecyclerView.ViewHolder {
+        private ImageView attachment;
+        private TextView textView;
+        private String fileName = "file";
+        public FileViewHolder(View v) {
+            super(v);
+            attachment = itemView.findViewById(R.id.attachment);
+            textView = itemView.findViewById(R.id.noteFileView);
+            textView.setText(fileName);
+            Drawable d = v.getContext().getResources().getDrawable(R.drawable.ic_attachment);
+            attachment.setImageDrawable(d);
+        }
+
+        public void bind(NoteModel noteModel) {
+            textView.setText(noteModel.getText());
+            attachment.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // TODO: download
+                }
+            });
         }
     }
 
@@ -93,7 +122,7 @@ public class NotesActivity extends AppCompatActivity {
         }
 
         public void bind(NoteModel noteModel) {
-            Glide.with(itemView.getContext()).load(noteModel.getImage()).into(noteImageView);
+            Glide.with(itemView.getContext()).load(noteModel.getFileUrl()).into(noteImageView);
             noteImageView.setClipToOutline(true);
         }
     }
@@ -118,6 +147,8 @@ public class NotesActivity extends AppCompatActivity {
             protected void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position, @NonNull NoteModel model) {
                 if (getItemViewType(position) == NOTE_TYPE_TEXT) {
                     ((NoteViewHolder) holder).bind(getItem(position));
+                } else if (getItemViewType(position) == NOTE_TYPE_FILE) {
+                    ((FileViewHolder) holder).bind(getItem(position));
                 } else {
                     ((ImageViewHolder) holder).bind(getItem(position));
                 }
@@ -127,6 +158,8 @@ public class NotesActivity extends AppCompatActivity {
             public int getItemViewType(int position) {
                 if(getItem(position).getNoteType() == 0L) {
                     return NOTE_TYPE_TEXT;
+                } else if (getItem(position).getNoteType() == 2L) {
+                    return NOTE_TYPE_FILE;
                 } else {
                     return NOTE_TYPE_IMAGE;
                 }
@@ -136,10 +169,16 @@ public class NotesActivity extends AppCompatActivity {
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
                 if (viewType == NOTE_TYPE_TEXT) {
+                    Log.d(TAG, "inflating as text");
                     View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.note_item_single, parent, false);
                     return new NoteViewHolder(view);
+                } else if (viewType == NOTE_TYPE_FILE) {
+                    View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.file_note_single, parent, false);
+                    Log.d(TAG, "inflating as file");
+                    return new FileViewHolder(view);
                 } else {
                     View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.image_note_single, parent, false);
+                    Log.d(TAG, "inflating as image");
                     return new ImageViewHolder(view);
                 }
             }
@@ -199,14 +238,13 @@ public class NotesActivity extends AppCompatActivity {
 
         storage = FirebaseStorage.getInstance("gs://cec21-project.appspot.com");
 
-        mAddNoteImageView = (ImageView) findViewById(R.id.addNoteImageView);
-        mAddNoteImageView.setOnClickListener(new View.OnClickListener() {
+        uploadFile = (ImageView) findViewById(R.id.uploadFile);
+        uploadFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("image/*");
-                startActivityForResult(intent, REQUEST_IMAGE);
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("*/*");
+                startActivityForResult(intent, REQUEST_FILE);
             }
         });
     }
@@ -215,13 +253,15 @@ public class NotesActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: requestCode=" + requestCode + ", resultCode=" + resultCode);
-        if (requestCode == REQUEST_IMAGE) {
+        if (requestCode == REQUEST_FILE) {
             if (resultCode == RESULT_OK) {
                 if (data != null) {
+
                     final Uri uri = data.getData();
-                    Log.d(TAG, "onActivityResult: " + uri);
+                    String fileName = getFileName(uri);
+                    final String mimeType = this.getContentResolver().getType(uri);
                     StorageReference storageRef = storage.getReference();
-                    StorageReference imageRef = storageRef.child("images/" + "test.jpg");
+                    StorageReference imageRef = storageRef.child("images/" + fileName);
                     UploadTask uploadTask = imageRef.putFile(uri);
                     uploadTask.addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -232,12 +272,18 @@ public class NotesActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                            Log.d(TAG, "success uploaded");
                             imageRef.getDownloadUrl()
                                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
                                         @Override
                                         public void onSuccess(Uri uri) {
-                                            Log.d("lorem", "onSuccess: " + uri.toString());
-                                            NoteModel note = new NoteModel("test.jpg", 1L, uri.toString());
+                                            Log.d(TAG, "onSuccess: " + uri.toString());
+                                            NoteModel note;
+                                            if (mimeType.startsWith("image")) {
+                                                note = new NoteModel(fileName, 1L, uri.toString());
+                                            } else {
+                                                note = new NoteModel(fileName, 2L, uri.toString());
+                                            }
                                             db.collection("journals").document(id).collection("notes").add(note);
                                         }
                                     });
@@ -246,6 +292,28 @@ public class NotesActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    private String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 
     @Override
