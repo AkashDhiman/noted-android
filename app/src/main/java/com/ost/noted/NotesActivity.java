@@ -6,10 +6,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,10 +25,17 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.File;
 
 public class NotesActivity extends AppCompatActivity {
     private FirebaseFirestore db;
@@ -36,8 +47,12 @@ public class NotesActivity extends AppCompatActivity {
     private LinearLayoutManager mLinearLayoutManager;
     private EditText mNoteEditText;
     private Button mSendButton;
-    private final int NOTE_TYPE_TEXT = 0;
-    private final int NOTE_TYPE_IMAGE = 1;
+    private ImageView mAddNoteImageView;
+    private static FirebaseStorage storage;
+    private static final int REQUEST_IMAGE = 10;
+    private static final int NOTE_TYPE_TEXT = 0;
+    private static final int NOTE_TYPE_IMAGE = 1;
+    private String id;
 
     public static class NoteViewHolder extends RecyclerView.ViewHolder {
         private TextView noteTextView;
@@ -70,7 +85,7 @@ public class NotesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_notes);
 
         Intent intent = getIntent();
-        String id = intent.getStringExtra(JournalActivity.ID);
+        id = intent.getStringExtra(JournalActivity.ID);
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
@@ -163,6 +178,56 @@ public class NotesActivity extends AppCompatActivity {
                 mNoteEditText.setText("");
             }
         });
+
+        storage = FirebaseStorage.getInstance("gs://cec21-project.appspot.com");
+
+        mAddNoteImageView = (ImageView) findViewById(R.id.addNoteImageView);
+        mAddNoteImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("image/*");
+                startActivityForResult(intent, REQUEST_IMAGE);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult: requestCode=" + requestCode + ", resultCode=" + resultCode);
+        if (requestCode == REQUEST_IMAGE) {
+            if (resultCode == RESULT_OK) {
+                if (data != null) {
+                    final Uri uri = data.getData();
+                    Log.d(TAG, "onActivityResult: " + uri);
+                    StorageReference storageRef = storage.getReference();
+                    StorageReference imageRef = storageRef.child("images/" + "test.jpg");
+                    UploadTask uploadTask = imageRef.putFile(uri);
+                    uploadTask.addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            Log.w(TAG, "onFailure: Failed to upload");
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                            imageRef.getDownloadUrl()
+                                    .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                        @Override
+                                        public void onSuccess(Uri uri) {
+                                            Log.d("lorem", "onSuccess: " + uri.toString());
+                                            NoteModel note = new NoteModel("test.jpg", 1L, uri.toString());
+                                            db.collection("journals").document(id).collection("notes").add(note);
+                                        }
+                                    });
+                        }
+                    });
+                }
+            }
+        }
     }
 
     @Override

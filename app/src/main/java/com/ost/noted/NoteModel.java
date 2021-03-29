@@ -13,8 +13,17 @@ public class NoteModel {
         this.text = text;
         Long ts = System.currentTimeMillis() / 1000;
         this.ts = ts.toString();
+        this.image = null;
+        this.noteType = noteType;
+    }
+
+    public NoteModel(String text, long noteType, String image) {
+        this.text = text;
+        Long ts = System.currentTimeMillis() / 1000;
+        this.ts = ts.toString();
         this.image = "https://picsum.photos/500/300";
         this.noteType = noteType;
+        this.image = image;
     }
 
     public String getText() {
